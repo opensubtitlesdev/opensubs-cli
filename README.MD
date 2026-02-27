@@ -2,7 +2,7 @@
 
 A full featured, easy to use, CLI app to download subtitles from OpenSubtitles.com.
 
-![](subs-terminal.gif)
+![](opensubs-terminal.gif)
 
 ## Credits
 
@@ -14,7 +14,7 @@ This project is based on [subs-cli](https://github.com/alexandrucancescu/subs-cl
 - Download the best subtitle per language, saved as `movie.fr.srt`, `movie.en.srt`
 - Download all available subtitle results into a subfolder `movie/subname.fr.srt`
 - Multi-language support — download subtitles for several languages in one run
-- First **5 downloads are free** without an account; login to get up to 999,999/day
+- First **5 downloads are free** without an account; login to get up to 1000/day
 - Credentials stored securely in your OS keychain (Keychain / Credential Vault / Secret Service)
 - Interactive language picker fetched live from the OpenSubtitles API
 - Skips files that already have subtitles (use `--overwrite` to re-download)
