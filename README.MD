@@ -32,7 +32,10 @@ If you encounter an `EACCES` error on macOS, see [Installation Problems](#instal
 
 You can start immediately — the first **5 subtitle downloads are free** without an account.
 
-After 5 downloads, create a free account at [opensubtitles.com](https://www.opensubtitles.com). You only need your username and password; the API key is embedded in the tool.
+After 5 downloads, create a free account at [opensubtitles.com](https://www.opensubtitles.com/en/users/sign_up). You only need your username and password; the API key is embedded in the tool.
+
+
+You will get 20 downloads per day with a free account, more downloads can be obtain by contributing to the commmunity and upload subtitles, or purchase a VIP subscription [more infos](https://www.opensubtitles.com/en/support_us/)
 
 ---
 
