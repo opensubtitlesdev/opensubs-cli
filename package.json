@@ -1,0 +1,57 @@
+{
+  "name": "opensubs-cli",
+  "description": "A full featured, easy to use, CLI app to download subtitles from OpenSubtitles.com. Based on subs-cli by Alexandru Cancescu.",
+  "version": "0.1.0",
+  "private": false,
+  "main": "dist/Run.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./dist/Run.js",
+    "postuninstall": "node ./dist/Uninstall.js"
+  },
+  "author": "opensubtitlesdev",
+  "license": "MIT",
+  "homepage": "https://github.com/opensubtitlesdev/opensubs-cli",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opensubtitlesdev/opensubs-cli"
+  },
+  "files": [
+    "dist/*",
+    "extensions.json",
+    "langs.json"
+  ],
+  "types": "dist/Run.d.ts",
+  "typings": "dist/Run.d.ts",
+  "keywords": [
+    "node",
+    "opensubtitles",
+    "subtitle",
+    "subtitle-download",
+    "subtitles",
+    "subs",
+    "srt",
+    "opensubtitles.com",
+    "opensubs"
+  ],
+  "bin": {
+    "opensubs": "./dist/Run.js"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^8.1.0",
+    "@types/inquirer": "^6.5.0",
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "commander": "^5.1.0",
+    "form-data": "^4.0.5",
+    "fs-extra": "^9.0.1",
+    "inquirer": "^7.1.0",
+    "keytar": "^7.9.0",
+    "opensubtitles.com": "^1.1.0",
+    "ora": "^4.1.1",
+    "platform-folders": "^0.5.1"
+  }
+}
