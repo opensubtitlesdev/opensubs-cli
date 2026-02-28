@@ -6,7 +6,7 @@ A full featured, easy to use, CLI app to download subtitles from OpenSubtitles.c
 
 ## Credits
 
-This project is based on [subs-cli](https://github.com/alexandrucancescu/subs-cli) by [Alexandru Cancescu](https://github.com/alexandrucancescu). The original project has been updated to work with the new OpenSubtitles.com API and republished under a new package name to continue its development.
+This project is based on [subs-cli](https://github.com/alexandrucancescu/subs-cli). The original project has been updated to work with the new OpenSubtitles.com API and republished under a new package name to continue its development.
 
 ## Features
 
