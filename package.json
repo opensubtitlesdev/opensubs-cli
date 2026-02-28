@@ -1,7 +1,7 @@
 {
   "name": "opensubs-cli",
   "description": "A full featured, easy to use, CLI app to download subtitles from OpenSubtitles.com. Based on subs-cli by Alexandru Cancescu.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "main": "dist/Run.js",
   "scripts": {
