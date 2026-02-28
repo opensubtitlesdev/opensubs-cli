@@ -1,0 +1,4 @@
+# Real video files — too large for git. Run download.sh to populate.
+*
+!.gitignore
+!.gitkeep

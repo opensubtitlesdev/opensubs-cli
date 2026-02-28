@@ -23,6 +23,10 @@ interface Arguments{
 	setLanguages:boolean;
 	allLanguages:boolean;
 	allFiles:boolean;
+	lookupFeature:boolean;
+	featureType?:string;
+	query?:string;
+	select?:number;
 }
 
 export default function parse():Arguments{
@@ -30,6 +34,10 @@ export default function parse():Arguments{
 	const program=new commander.Command("opensubs");
 	program.version(pack.version);
 
+	program.option("-W, --lookup-feature","search OpenSubtitles for a title and write a .opensubs sidecar file");
+	program.option("--type <value>","feature type override for -W: movie or episode");
+	program.option("--query <value>","custom search query for -W (overrides filename/guessit)");
+	program.option("--select <n>","auto-select result #n for -W (non-interactive, useful for scripting/testing)");
 	program.option("-c, --config","show current configuration and exit");
 	program.option("-I, --info","query the OpenSubtitles API for your account information");
 	program.option("--set-languages","interactively fetch and set default language(s) from the OpenSubtitles language list");
@@ -69,6 +77,12 @@ export default function parse():Arguments{
 			col("--set-languages", "interactively set default language(s) from the API list"),
 			col("-h, --help",      "display help for command"),
 			"",
+			chalk.bold("  Sidecar:"),
+			col("-W, --lookup-feature",    "search for a title and write a .opensubs sidecar"),
+			col("--type <movie|episode>",  "force type for -W (default: auto-detect)"),
+			col("--query <value>",         "custom search query for -W"),
+		col("--select <n>",            "auto-select result #n for -W (non-interactive)"),
+			"",
 			chalk.bold("  Download:"),
 			col("-l, --lang <value>",   `language code(s), e.g. ${chalk.yellow("en")} or ${chalk.yellow("en,fr,de")}  (default: en)`),
 			col("-L, --all-languages",  `best subtitle per language  → ${chalk.dim("movie.fr.srt, movie.en.srt")}`),
@@ -101,7 +115,7 @@ export default function parse():Arguments{
 		parser:program,
 		info: program.info ?? false,
 		notificationOutput: program.notificationOutput ?? false,
-		noPrompt: program.noPrompt ?? false,
+		noPrompt: program.prompt === false,   // --no-prompt sets program.prompt=false
 		debug: program.debug ?? false,
 		debugRequest: program.debugRequest ?? false,
 		debugResponse: program.debugResponse ?? false,
@@ -110,5 +124,9 @@ export default function parse():Arguments{
 		setLanguages: program.setLanguages ?? false,
 		allLanguages: program.allLanguages ?? false,
 		allFiles: program.allFiles ?? false,
+		lookupFeature: program.lookupFeature ?? false,
+		featureType: program.type,
+		query: program.query,
+		select: program.select !== undefined ? parseInt(program.select, 10) : undefined,
 	}
 }

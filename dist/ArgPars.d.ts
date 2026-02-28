@@ -18,6 +18,10 @@ interface Arguments {
     setLanguages: boolean;
     allLanguages: boolean;
     allFiles: boolean;
+    lookupFeature: boolean;
+    featureType?: string;
+    query?: string;
+    select?: number;
 }
 export default function parse(): Arguments;
 export {};

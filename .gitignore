@@ -1,4 +1,6 @@
 node_modules
 .DS_Store
 .idea
+tests/fixtures/stubs/Big.Buck.Bunny.2008.320x180.mp4
+tests/fixtures/stubs/Pioneer.One.S01E01.480p.mp4
 run

@@ -11,6 +11,10 @@ function parse() {
     const pack = (0, fs_extra_1.readJsonSync)((0, path_1.join)(__dirname, "../package.json"));
     const program = new commander.Command("opensubs");
     program.version(pack.version);
+    program.option("-W, --lookup-feature", "search OpenSubtitles for a title and write a .opensubs sidecar file");
+    program.option("--type <value>", "feature type override for -W: movie or episode");
+    program.option("--query <value>", "custom search query for -W (overrides filename/guessit)");
+    program.option("--select <n>", "auto-select result #n for -W (non-interactive, useful for scripting/testing)");
     program.option("-c, --config", "show current configuration and exit");
     program.option("-I, --info", "query the OpenSubtitles API for your account information");
     program.option("--set-languages", "interactively fetch and set default language(s) from the OpenSubtitles language list");
@@ -44,6 +48,12 @@ function parse() {
             col("--set-languages", "interactively set default language(s) from the API list"),
             col("-h, --help", "display help for command"),
             "",
+            chalk.bold("  Sidecar:"),
+            col("-W, --lookup-feature", "search for a title and write a .opensubs sidecar"),
+            col("--type <movie|episode>", "force type for -W (default: auto-detect)"),
+            col("--query <value>", "custom search query for -W"),
+            col("--select <n>", "auto-select result #n for -W (non-interactive)"),
+            "",
             chalk.bold("  Download:"),
             col("-l, --lang <value>", `language code(s), e.g. ${chalk.yellow("en")} or ${chalk.yellow("en,fr,de")}  (default: en)`),
             col("-L, --all-languages", `best subtitle per language  → ${chalk.dim("movie.fr.srt, movie.en.srt")}`),
@@ -74,15 +84,19 @@ function parse() {
         parser: program,
         info: (_c = program.info) !== null && _c !== void 0 ? _c : false,
         notificationOutput: (_d = program.notificationOutput) !== null && _d !== void 0 ? _d : false,
-        noPrompt: (_e = program.noPrompt) !== null && _e !== void 0 ? _e : false,
-        debug: (_f = program.debug) !== null && _f !== void 0 ? _f : false,
-        debugRequest: (_g = program.debugRequest) !== null && _g !== void 0 ? _g : false,
-        debugResponse: (_h = program.debugResponse) !== null && _h !== void 0 ? _h : false,
-        debugHeaders: (_j = program.debugHeaders) !== null && _j !== void 0 ? _j : false,
-        config: (_k = program.config) !== null && _k !== void 0 ? _k : false,
-        setLanguages: (_l = program.setLanguages) !== null && _l !== void 0 ? _l : false,
-        allLanguages: (_m = program.allLanguages) !== null && _m !== void 0 ? _m : false,
-        allFiles: (_o = program.allFiles) !== null && _o !== void 0 ? _o : false,
+        noPrompt: program.prompt === false, // --no-prompt sets program.prompt=false
+        debug: (_e = program.debug) !== null && _e !== void 0 ? _e : false,
+        debugRequest: (_f = program.debugRequest) !== null && _f !== void 0 ? _f : false,
+        debugResponse: (_g = program.debugResponse) !== null && _g !== void 0 ? _g : false,
+        debugHeaders: (_h = program.debugHeaders) !== null && _h !== void 0 ? _h : false,
+        config: (_j = program.config) !== null && _j !== void 0 ? _j : false,
+        setLanguages: (_k = program.setLanguages) !== null && _k !== void 0 ? _k : false,
+        allLanguages: (_l = program.allLanguages) !== null && _l !== void 0 ? _l : false,
+        allFiles: (_m = program.allFiles) !== null && _m !== void 0 ? _m : false,
+        lookupFeature: (_o = program.lookupFeature) !== null && _o !== void 0 ? _o : false,
+        featureType: program.type,
+        query: program.query,
+        select: program.select !== undefined ? parseInt(program.select, 10) : undefined,
     };
 }
 //# sourceMappingURL=ArgPars.js.map

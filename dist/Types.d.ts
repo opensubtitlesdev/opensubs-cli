@@ -68,6 +68,19 @@ export interface IOpenSubtitles {
         link: string;
     }>;
 }
+export interface IFeatureAttributes {
+    title: string;
+    year?: number;
+    feature_type: string;
+    imdb_id?: number;
+    tmdb_id?: number;
+    url?: string;
+}
+export interface IFeatureResult {
+    id: number | string;
+    type: string;
+    attributes: IFeatureAttributes;
+}
 export interface ILanguage {
     name: string;
     alpha2: string;

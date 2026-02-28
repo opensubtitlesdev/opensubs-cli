@@ -20,16 +20,12 @@ export function isString(...str:string[]):boolean{
 }
 
 export function getLang(lang:string):ILanguage{
-	const languages:ILanguage[]=readJsonSync(join(__dirname,"../langs.json"));
+	const json=readJsonSync(join(__dirname,"../langs.json"));
+	const languages:IApiLanguage[]=Array.isArray(json) ? json : (json.data || []);
 
-	let code=null;
-	if(lang.length===2){
-		code=languages.find(l=>l.alpha2===lang);
-	}else if(lang.length===3){
-		code=languages.find(l=>l.alpha3===lang);
-	}
-
-	return code;
+	const found=languages.find(l=>l.language_code===lang);
+	if(!found) return null;
+	return { alpha2: found.language_code, alpha3: found.language_code, name: found.language_name };
 }
 
 export async function fetchApiLanguages(): Promise<IApiLanguage[]> {

@@ -31,15 +31,12 @@ function isString(...str) {
     return true;
 }
 function getLang(lang) {
-    const languages = (0, fs_extra_1.readJsonSync)((0, path_1.join)(__dirname, "../langs.json"));
-    let code = null;
-    if (lang.length === 2) {
-        code = languages.find(l => l.alpha2 === lang);
-    }
-    else if (lang.length === 3) {
-        code = languages.find(l => l.alpha3 === lang);
-    }
-    return code;
+    const json = (0, fs_extra_1.readJsonSync)((0, path_1.join)(__dirname, "../langs.json"));
+    const languages = Array.isArray(json) ? json : (json.data || []);
+    const found = languages.find(l => l.language_code === lang);
+    if (!found)
+        return null;
+    return { alpha2: found.language_code, alpha3: found.language_code, name: found.language_name };
 }
 function fetchApiLanguages() {
     return __awaiter(this, void 0, void 0, function* () {

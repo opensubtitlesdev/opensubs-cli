@@ -25,6 +25,9 @@ const os_1 = require("os");
 const child_process_1 = require("child_process");
 const DebugLogger_1 = require("./DebugLogger");
 const MovieHash_1 = require("./MovieHash");
+const Sidecar_1 = require("./Sidecar");
+const Guessit_1 = require("./Guessit");
+const LookupFeature_1 = require("./LookupFeature");
 const args = (0, ArgPars_1.default)();
 // Enable debug mode if requested
 if (args.debug || args.debugRequest || args.debugResponse || args.debugHeaders) {
@@ -135,7 +138,9 @@ function showConfig() {
         console.log(`  Config file : ${chalk.yellow(Preferences_1.PREF_FILE)}`);
         console.log(`  Username    : ${matchedAccount ? chalk.greenBright(matchedAccount.account) : chalk.gray("(not set)")}`);
         console.log(`  Password    : ${matchedAccount ? chalk.greenBright("*****") + chalk.gray(" (stored in system keychain)") : chalk.gray("(not set)")}`);
-        console.log(`  Language    : ${Preferences_1.default.lang ? chalk.greenBright(Preferences_1.default.lang) : chalk.gray("(not set — defaults to eng)")}`);
+        const langParts = Preferences_1.default.lang ? Preferences_1.default.lang.split(",").map((c) => c.trim()).filter(Boolean) : [];
+        console.log(`  Languages   : ${langParts.length > 0 ? chalk.greenBright(Preferences_1.default.lang) : chalk.gray("(not set — defaults to en)")}`);
+        console.log(`  Default lang: ${langParts.length > 0 ? chalk.greenBright(langParts[0]) : chalk.gray("en")}`);
         console.log(`  Anon quota  : ${chalk.yellow(Preferences_1.default.anonymousDownloadCount + "/5")} downloads used`);
         console.log(`  Auth token  : ${tokenStatus}`);
         console.log(line);
@@ -181,6 +186,11 @@ function handleInfo() {
 }
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
+        if (args.lookupFeature) {
+            const targetPath = getPath();
+            yield (0, LookupFeature_1.handleLookupFeature)(targetPath, args.featureType, args.query, args.select);
+            return;
+        }
         if (args.config) {
             yield showConfig();
             return;
@@ -375,7 +385,7 @@ function buildTasks(files, langList, langStr) {
         else {
             // Normal or --all-languages: one task per file × language.
             // Lang code is always included in the output filename: movie.fr.srt
-            const langs = args.allLanguages ? langList : [langStr];
+            const langs = args.allLanguages ? langList : [langList[0]];
             for (const file of files) {
                 const fileBase = file.replace(/\.[^.]*$/, "");
                 for (const langCode of langs) {
@@ -540,6 +550,77 @@ function directDownloadCall(file_id, client) {
         }
     });
 }
+function buildSearchParams(videoFile, lang, moviehash) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        const params = { languages: lang.toLowerCase() };
+        if (moviehash)
+            params.moviehash = moviehash.toLowerCase();
+        // Priority: file sidecar > folder sidecar > filename query
+        const sidecar = (_a = (0, Sidecar_1.readFileSidecar)(videoFile)) !== null && _a !== void 0 ? _a : (0, Sidecar_1.readFolderSidecar)((0, path_1.dirname)(videoFile));
+        if (sidecar) {
+            if (args.debug || args.debugRequest) {
+                (0, DebugLogger_1.debugLog)(`[SIDECAR] ${(0, path_1.basename)(videoFile)}: ${JSON.stringify(sidecar)}`);
+            }
+            if (sidecar.imdb_id !== undefined) {
+                // Direct episode or movie imdb_id
+                params.imdb_id = String(sidecar.imdb_id);
+            }
+            else if (sidecar.parent_imdb_id !== undefined || sidecar.parent_tmdb_id !== undefined) {
+                // TV show: need season/episode from guessit
+                yield rateLimit();
+                let guessit;
+                try {
+                    guessit = yield (0, Guessit_1.callGuessit)((0, path_1.basename)(videoFile));
+                    if (args.debug || args.debugRequest) {
+                        (0, DebugLogger_1.debugLog)(`[GUESSIT] ${(0, path_1.basename)(videoFile)}: ${JSON.stringify(guessit)}`);
+                    }
+                }
+                catch (e) {
+                    if (args.debug || args.debugRequest) {
+                        (0, DebugLogger_1.debugLog)(`[GUESSIT] Failed for ${(0, path_1.basename)(videoFile)}: ${e.message} — falling back to filename`);
+                    }
+                }
+                if (guessit && guessit.type === 'episode' && guessit.season && guessit.episode) {
+                    if (sidecar.parent_imdb_id !== undefined)
+                        params.parent_imdb_id = String(sidecar.parent_imdb_id);
+                    else
+                        params.parent_tmdb_id = String(sidecar.parent_tmdb_id);
+                    params.season_number = String(guessit.season);
+                    params.episode_number = String(guessit.episode);
+                }
+                else {
+                    // Guessit couldn't identify season/ep — fall back to filename
+                    params.query = (0, path_1.basename)(videoFile).replace(/\.[^/.]+$/, "").toLowerCase();
+                }
+            }
+            else if (sidecar.tmdb_id !== undefined) {
+                params.tmdb_id = String(sidecar.tmdb_id);
+            }
+            else {
+                // Sidecar has no usable IDs
+                params.query = (0, path_1.basename)(videoFile).replace(/\.[^/.]+$/, "").toLowerCase();
+            }
+        }
+        else {
+            // No sidecar: use guessit to build a clean title query; hash is also sent if available
+            yield rateLimit();
+            let query = (0, path_1.basename)(videoFile).replace(/\.[^/.]+$/, "").toLowerCase();
+            try {
+                const guessit = yield (0, Guessit_1.callGuessit)((0, path_1.basename)(videoFile));
+                if (guessit === null || guessit === void 0 ? void 0 : guessit.title) {
+                    query = guessit.title.toLowerCase();
+                    if (guessit.year)
+                        query += ` ${guessit.year}`;
+                }
+            }
+            catch (e) { /* fall back to raw filename */ }
+            params.query = query;
+        }
+        // Sort alphabetically — API returns 301 if params are not sorted
+        return Object.fromEntries(Object.entries(params).sort(([a], [b]) => a.localeCompare(b)));
+    });
+}
 function searchSubtitles(videoFile, lang) {
     return __awaiter(this, void 0, void 0, function* () {
         let moviehash;
@@ -554,16 +635,10 @@ function searchSubtitles(videoFile, lang) {
                 (0, DebugLogger_1.debugLog)(`[DEBUG] Could not calculate moviehash: ${e.message}`);
             }
         }
-        // Build search params: all values lowercase, keys sorted alphabetically.
-        // The API returns a 301 redirect if params are not in alphabetical order or not lowercase.
-        const rawParams = {
-            languages: lang.toLowerCase(),
-            query: (0, path_1.basename)(videoFile).replace(/\.[^/.]+$/, "").toLowerCase(),
-        };
-        if (moviehash)
-            rawParams.moviehash = moviehash.toLowerCase();
-        // Explicit sort guarantees alphabetical key order regardless of insertion order
-        const searchParams = Object.fromEntries(Object.entries(rawParams).sort(([a], [b]) => a.localeCompare(b)));
+        const searchParams = yield buildSearchParams(videoFile, lang, moviehash);
+        if (args.debug || args.debugRequest) {
+            (0, DebugLogger_1.debugLog)(`[DEBUG] Search params: ${JSON.stringify(searchParams)}`);
+        }
         try {
             const subsFound = yield osub.subtitles(searchParams);
             return subsFound.data || [];
